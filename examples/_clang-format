@@ -1,0 +1,9 @@
+﻿---
+BasedOnStyle: Microsoft
+IndentCaseLabels: 'true'
+IndentWidth: '2'
+Language: Cpp
+SortIncludes: 'false'
+SortUsingDeclarations: 'false'
+
+...
