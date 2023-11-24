@@ -7,13 +7,13 @@ find_path(NFEVAL_ROOT_DIR "")
 set (NFEVAL_VERSION 85) 
 
 
-option(USE_QT "" OFF)
+option(USE_QT "" ON)
   
 if(USE_QT)
 
  set(CMAKE_PREFIX_PATH "M:/Win64_VS2017/qt-5.12.4") # Without this line, cmake does not find the package
 
- find_package(Qt5 COMPONENTS Core Widgets REQUIRED  )
+ find_package(Qt5 COMPONENTS Core Widgets AxContainer AxServer REQUIRED  )
 
  set(CMAKE_AUTOMOC ON) # For meta object compiler
 

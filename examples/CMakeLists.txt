@@ -38,3 +38,9 @@ set_target_properties(${ProjectName} PROPERTIES FOLDER "examples")
 add_subdirectory(NFContour)
  
 add_subdirectory(NFPrfIO)
+
+if(USE_QT)
+
+add_subdirectory(NFEvalGUI)
+
+endif()
