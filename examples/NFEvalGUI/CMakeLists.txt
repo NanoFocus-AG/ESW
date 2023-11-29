@@ -26,8 +26,6 @@ set(NFEvalGUI_UIS
 QT5_WRAP_UI(NFEvalGUI_UIS_H ${NFEvalGUI_UIS})
 
  
-include_directories(${PROJECT_BINARY_DIR}/Applications/NFEvalGUI)
-
 
 add_executable(NFEvalGUI WIN32 ${NFEvalGUI_SRCS} ${NFEvalGUI_UIS_H} ${NFEvalGUI_MOC_SRCS} ${NFEvalGUI_HDRS} ${NFEvalGUI_QT_HDRS} )
 
@@ -45,6 +43,7 @@ target_link_libraries(NFEvalGUI PRIVATE ${NFEVAL_BASE_LIBS}
  
 target_include_directories(NFEvalGUI  PRIVATE ${NFEVAL_INCLUDE_DIR}  
 					  ${NFEVAL_ROOT_DIR}/include/vtk-8.2
+					  ${CMAKE_CURRENT_BINARY_DIR}
                      )
 
 target_compile_definitions(NFEvalGUI PRIVATE  -DNOMINMAX )
