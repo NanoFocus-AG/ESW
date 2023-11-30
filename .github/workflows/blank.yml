@@ -8,3 +8,4 @@ jobs:
     steps:
       - name: c-linter
         uses: tonybaloney/cppcheck-action@master
+        path: examples/NFEvalGUI
