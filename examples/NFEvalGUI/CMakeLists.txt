@@ -33,9 +33,9 @@ target_link_libraries(NFEvalGUI PRIVATE ${NFEVAL_BASE_LIBS}
                                         ${NFEVAL_ROOT_DIR}/lib/NFQtWidgets${NFEVAL_VERSION}x64.lib
                                         Qt5::Widgets 
                                         Qt5::Core 
-										Qt5::AxContainer
-										Qt5::AxServer
-										${NFEVAL_ROOT_DIR}/lib/vtk-8.2/vtkCommonCore-8.2.lib
+                                        Qt5::AxContainer
+                                        Qt5::AxServer
+                                        ${NFEVAL_ROOT_DIR}/lib/vtk-8.2/vtkCommonCore-8.2.lib
 
 										 
                      )

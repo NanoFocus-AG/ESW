@@ -1,9 +1,9 @@
 /*
-* myMainDialog.cpp
-*
-*  Created on: 18.09.2009
-*      Author: stieger
-*/
+ * myMainDialog.cpp
+ *
+ *  Created on: 18.09.2009
+ *      Author: stieger
+ */
 
 #include <sstream>
 #include <string>
@@ -11,7 +11,6 @@
 #include <QStandardItemModel>
 #include <QMessageBox>
 #include <QSettings>
- 
 
 #include "NFParameterSetFileIO.h"
 #include "NFEvalLogger.h"
@@ -25,7 +24,7 @@
 #include "NFEvaluationFactory.h"
 
 #include "NFHistogram.h"
- 
+
 #include "NFAlgoIO.h"
 #include "NFAlgoTopoMinMax.h"
 #include "NFComplexEvaluation.h"
@@ -34,7 +33,7 @@
 
 #include "NFEvalGUIMainWindow.h"
 #include "NFUnits.h"
- 
+
 #include "NF3DEnums.h"
 #include "NFTopoViewer.h"
 #include "NF2DTopoViewer.h"
@@ -43,19 +42,17 @@
 #include "NFQtWidgetsUtils.h"
 #include <QDebug>
 
-static const char * AppName ="NFEvalGui.config";
+static const char *AppName = "NFEvalGui.config";
 
-static const char * LAST_OPEN_DIR_TOPO = "LastOpenDirTopo";
+static const char *LAST_OPEN_DIR_TOPO = "LastOpenDirTopo";
 
-
-class AlgoListItem:public QListWidgetItem
+class AlgoListItem : public QListWidgetItem
 {
-  //Q_OBJECT
+  // Q_OBJECT
 
 public:
   NF::NFParameterSet::Pointer ParamSet;
   NF::NFEvaluation::Pointer Algo;
-
 };
 
 void addAlgo(QAbstractItemModel *model, const std::string &name)
@@ -71,24 +68,23 @@ QAbstractItemModel *createAlgoList(QObject *parent)
   model->setHeaderData(0, Qt::Horizontal, QObject::tr("Algoname"));
 
   NF::NFEvaluationFactory::Pointer fac = NF::NFEvaluationFactory::New();
-  const NF::NFEvaluationFactory::LightObjectListType &li=fac->getLightObjectList();
-  NF::NFEvaluationFactory::LightObjectListType::const_iterator it=li.begin();
- 
-  for(;it!=li.end();++it)
+  const NF::NFEvaluationFactory::LightObjectListType &li = fac->getLightObjectList();
+  NF::NFEvaluationFactory::LightObjectListType::const_iterator it = li.begin();
+
+  for (; it != li.end(); ++it)
   {
-    addAlgo(model,(*it)->getName());
+    addAlgo(model, (*it)->getName());
   }
 
   return model;
 }
 
-QAbstractItemModel *createAlgoItem(QObject *parent,NF::NFLightObject::Pointer ptr)
+QAbstractItemModel *createAlgoItem(QObject *parent, NF::NFLightObject::Pointer ptr)
 {
   QStandardItemModel *model = new QStandardItemModel(1, 2, parent);
 
   model->setHeaderData(0, Qt::Horizontal, QObject::tr("Algoname"));
   model->setHeaderData(1, Qt::Horizontal, QObject::tr("Pointer"));
-
 
   model->insertRow(0);
   model->setData(model->index(0, 0), QString(ptr->getName().c_str()));
@@ -99,180 +95,188 @@ QAbstractItemModel *createAlgoItem(QObject *parent,NF::NFLightObject::Pointer pt
 
 void Command::debugDone(int how)
 {
-  m_debugEnable = (0!= (how&2));
-  m_abortEval = (0!=(how&4));
-  m_debugDone = (0!= (how&1));
+  m_debugEnable = (0 != (how & 2));
+  m_abortEval = (0 != (how & 4));
+  m_debugDone = (0 != (how & 1));
 }
 
-void Command::execute(const NF::NFObject::ConstPointer *caller, const NF::NFEvent & evnt ) const
+void Command::execute(const NF::NFObject::ConstPointer *caller, const NF::NFEvent &evnt) const
 {
-  NFLOG_WARN(NF::getNFLogger(),"Irgendwas läuft hier schief");
+  NFLOG_WARN(NF::getNFLogger(), "Irgendwas läuft hier schief");
 }
 
 // Method that is executed on event handling
-void Command::execute(NF::NFObject::Pointer *caller,  const NF::NFEvent & evnt )
+void Command::execute(NF::NFObject::Pointer *caller, const NF::NFEvent &evnt)
 {
-  int evtTyp= evnt.getType();
+  int evtTyp = evnt.getType();
   QMessageBox msgBox;
-  int ret=0;
-  NF::NFEvaluation * eval;
-  switch(evtTyp)
+  int ret = 0;
+  NF::NFEvaluation *eval;
+  switch (evtTyp)
   {
-  case  NF::NFEvent::PROGRESS_EVENT:
-    NF::NFProcessObject* obj;
-    if(obj=dynamic_cast<NF::NFProcessObject*>(caller->get()))
-    {
-      progress= obj->getProgress();
-      emit progressPercent(progress *100);
-    }
-    break;
-  case  NF::NFEvent::DEBUG_EVENT:
-
-    if(eval=dynamic_cast<NF::NFEvaluation*>(caller->get()))
-    {
-      m_debugDone=false;
-      NF::NFEvaluationDebugEvent ev(*((NF::NFEvaluationDebugEvent*)&evnt));
-      QString a(ev.getDebugEventName().c_str());
-      emit  debugDataReady(eval,a ) ;
-      
-      while(false == m_debugDone)
+    case NF::NFEvent::PROGRESS_EVENT:
+      NF::NFProcessObject *obj;
+      if (obj = dynamic_cast<NF::NFProcessObject *>(caller->get()))
       {
-        Sleep(50);
+        progress = obj->getProgress();
+        emit progressPercent(progress * 100);
       }
-      eval->setDebugEnabled(m_debugEnable);
-    }
-    break;
-  default:
-    break;
+      break;
+    case NF::NFEvent::DEBUG_EVENT:
+
+      if (eval = dynamic_cast<NF::NFEvaluation *>(caller->get()))
+      {
+        m_debugDone = false;
+        NF::NFEvaluationDebugEvent ev(*((NF::NFEvaluationDebugEvent *)&evnt));
+        QString a(ev.getDebugEventName().c_str());
+        emit debugDataReady(eval, a);
+
+        while (false == m_debugDone)
+        {
+          Sleep(50);
+        }
+        eval->setDebugEnabled(m_debugEnable);
+      }
+      break;
+    default:
+      break;
   }
 }
 
 void NFEvaluationThread::run()
 {
-  if(eval->getNumberOfInputTopos() == 1)
+  if (eval->getNumberOfInputTopos() == 1)
   {
     eval->setInputTopo(topo);
   }
   eval->setParameterSet(paramSet);
 
-  eval->addObserver(NF::NFProgressEvent(),&cmd);
-  eval->addObserver(NF::NFEvaluationDebugEvent(""),&cmd);
-  //eval->setDebugEnabled(true);
+  eval->addObserver(NF::NFProgressEvent(), &cmd);
+  eval->addObserver(NF::NFEvaluationDebugEvent(""), &cmd);
+  // eval->setDebugEnabled(true);
   eval->setReleaseInputsAfterUse(true);
-  m_ResultStatus =eval->evaluate();
+  m_ResultStatus = eval->evaluate();
 }
 
 void NFEvalGUIMainWindow::continueEval()
 {
   ui.btnContinue->setEnabled(false);
   int val = 0;
-  val |=1;
+  val |= 1;
   if (ui.chk_Debug->isChecked())
   {
-    val |=2;
+    val |= 2;
   }
   emit debugDone(val);
 }
 
-void NFEvalGUIMainWindow::setDebugData(void* e, const QString name )
+void NFEvalGUIMainWindow::setDebugData(void *e, const QString name)
 {
 
-  NF::NFEvaluation::Pointer eval( (NF::NFEvaluation*)e);
+  NF::NFEvaluation::Pointer eval((NF::NFEvaluation *)e);
 
   ui.debugParams->setParameterSet(eval->getDebugParameterSet());
   if (eval->getDebugParameterSet()->containsParameter(NF::NFEvaluation_LatestDebugTopos))
   {
-    NF::NFVariant var  =eval->getDebugParameter(NF::NFEvaluation_LatestDebugTopos);
-    if (var.getNumberOfElements() >0 && var.getType() == NF::NFVariant::INT_VECTOR_TYPE)
+    NF::NFVariant var = eval->getDebugParameter(NF::NFEvaluation_LatestDebugTopos);
+    if (var.getNumberOfElements() > 0 && var.getType() == NF::NFVariant::INT_VECTOR_TYPE)
     {
       setCurrentTopo(eval->getDebugOutput(var.getIntVector()[0]));
     }
   }
- 
-  ui.tabsAlgoParams->setCurrentIndex(2);
-  ui.tabsAlgoParams->setTabText(2,QString(name) );
-  ui.btnContinue->setEnabled(true);
- }
 
-NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent,flags)
+  ui.tabsAlgoParams->setCurrentIndex(2);
+  ui.tabsAlgoParams->setTabText(2, QString(name));
+  ui.btnContinue->setEnabled(true);
+}
+
+NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags)
 {
-  m_algoCount=0;
+  m_algoCount = 0;
 
   ui.setupUi(this);
 
   readSettings();
 
-  //ui.TopoView->SetUseTDx(true);
+  // ui.TopoView->SetUseTDx(true);
 
- 
   thread = new NFEvaluationThread();
-  QObject::connect(thread,SIGNAL(	finished()),this,SLOT(threadFinished()));
-  QObject::connect(&(thread->cmd),SIGNAL(	progressPercent(int)),this->ui.progressBar,SLOT(setValue(int )));
+  QObject::connect(thread, SIGNAL(finished()), this, SLOT(threadFinished()));
+  QObject::connect(&(thread->cmd), SIGNAL(progressPercent(int)), this->ui.progressBar, SLOT(setValue(int)));
 
-  QObject::connect(&(thread->cmd),SIGNAL(	debugDataReady(void*,const QString )),this,SLOT(setDebugData(void*,const QString  )));
+  QObject::connect(&(thread->cmd), SIGNAL(debugDataReady(void *, const QString)), this,
+                   SLOT(setDebugData(void *, const QString)));
 
-  QObject::connect(this,SIGNAL(debugDone(int)),&(thread->cmd),SLOT(debugDone(int)));
-  QObject::connect(ui.TopoView,SIGNAL(mousePosition(double, double, double, unsigned int, unsigned int, double, int, unsigned int, int)),this,SLOT(mousePositionSlot(double, double, double, unsigned int, unsigned int, double, int, unsigned int, int )));
-  QObject::connect(ui.btn_ColorRangeSync, SIGNAL(clicked()), this , SLOT(syncColor()));
+  QObject::connect(this, SIGNAL(debugDone(int)), &(thread->cmd), SLOT(debugDone(int)));
+  QObject::connect(
+      ui.TopoView,
+      SIGNAL(mousePosition(double, double, double, unsigned int, unsigned int, double, int, unsigned int, int)), this,
+      SLOT(mousePositionSlot(double, double, double, unsigned int, unsigned int, double, int, unsigned int, int)));
+  QObject::connect(ui.btn_ColorRangeSync, SIGNAL(clicked()), this, SLOT(syncColor()));
   QObject::connect(ui.actionNFEvalInit, SIGNAL(triggered()), this, SLOT(evalInit()));
   QObject::connect(ui.actionNFEvalDestroy, SIGNAL(triggered()), this, SLOT(evalDestroy()));
   ui.TopoView->setNumberOfViews(1);
-  ui.TopoView->setAdvancedMode(true,-1);
- // ui.TopoView->GetRenderWindow()->Render();
+  ui.TopoView->setAdvancedMode(true, -1);
+  // ui.TopoView->GetRenderWindow()->Render();
   ui.TopoView->repaint(-1);
   ui.TopoView->connectTo3DTopoWidget(0);
-  
-  NFTopoViewer * v=ui.TopoView->getTopoViewer(0);
+
+  NFTopoViewer *v = ui.TopoView->getTopoViewer(0);
   NF2DTopoViewer *topo2DViewer = v->getTopoViewer2D();
   if (v)
   {
     topo2DViewer = v->getTopoViewer2D();
     if (topo2DViewer)
     {
-      QObject::connect(topo2DViewer, SIGNAL(mouseLeftButtonDblClickInScene(double, double)), this, SLOT(mouseLeftButtonDblClickInSceneSlot(double, double)));
-      QObject::connect(topo2DViewer, SIGNAL(mouseButtonPressInScene(double, double, NF2DTopoViewer::NFUserMouseButton)), this, SLOT(mouseButtonPressInSceneSlot(double, double, NF2DTopoViewer::NFUserMouseButton)));
-      QObject::connect(topo2DViewer, SIGNAL(mouseButtonReleaseInScene(double, double, NF2DTopoViewer::NFUserMouseButton)), this, SLOT(mouseButtonReleaseInSceneSlot(double, double, NF2DTopoViewer::NFUserMouseButton)));
-      QObject::connect(topo2DViewer, SIGNAL(lineChanged(NFObjectID*, NFObjectID*, double, double, double, double)), this, SLOT(lineChangedSlot(NFObjectID*, NFObjectID*, double, double, double, double)));
+      QObject::connect(topo2DViewer, SIGNAL(mouseLeftButtonDblClickInScene(double, double)), this,
+                       SLOT(mouseLeftButtonDblClickInSceneSlot(double, double)));
+      QObject::connect(topo2DViewer, SIGNAL(mouseButtonPressInScene(double, double, NF2DTopoViewer::NFUserMouseButton)),
+                       this, SLOT(mouseButtonPressInSceneSlot(double, double, NF2DTopoViewer::NFUserMouseButton)));
+      QObject::connect(topo2DViewer,
+                       SIGNAL(mouseButtonReleaseInScene(double, double, NF2DTopoViewer::NFUserMouseButton)), this,
+                       SLOT(mouseButtonReleaseInSceneSlot(double, double, NF2DTopoViewer::NFUserMouseButton)));
+      QObject::connect(topo2DViewer, SIGNAL(lineChanged(NFObjectID *, NFObjectID *, double, double, double, double)),
+                       this, SLOT(lineChangedSlot(NFObjectID *, NFObjectID *, double, double, double, double)));
     }
   }
 
-  //if (v)
+  // if (v)
   //{
-  //NFRect newSceneSize;
-  //v->getTopoViewer2D()->setSceneSize(0, 0, 50000, 50000, &newSceneSize);
-  //v->getTopoViewer2D()->addRectangle(0, 0, 50000, 50000, QColor(Qt::gray).rgba(), QColor(Qt::black).rgba());
+  // NFRect newSceneSize;
+  // v->getTopoViewer2D()->setSceneSize(0, 0, 50000, 50000, &newSceneSize);
+  // v->getTopoViewer2D()->addRectangle(0, 0, 50000, 50000, QColor(Qt::gray).rgba(), QColor(Qt::black).rgba());
   //}
 
   /*QObject::connect(ui.actionOpen, SIGNAL(triggered()), this,
   SLOT(OpenFile()));*/
- // vtkOpenGLHardwareSupport * hardware = 
- //   vtkOpenGLRenderWindow::SafeDownCast(ui.TopoView->GetRenderWindow())->GetHardwareSupport();
+  // vtkOpenGLHardwareSupport * hardware =
+  //   vtkOpenGLRenderWindow::SafeDownCast(ui.TopoView->GetRenderWindow())->GetHardwareSupport();
 
- // vtkOpenGLExtensionManager *extensions = vtkOpenGLExtensionManager::New();
- // extensions->SetRenderWindow(ui.TopoView->GetRenderWindow());
+  // vtkOpenGLExtensionManager *extensions = vtkOpenGLExtensionManager::New();
+  // extensions->SetRenderWindow(ui.TopoView->GetRenderWindow());
   // Force a Render here so that we can call glGetString reliably:
   //
- // ui.TopoView->GetRenderWindow()->Render();
-  //ui.AvailableAlgosList->setNumberOfInputTopos(1);
+  // ui.TopoView->GetRenderWindow()->Render();
+  // ui.AvailableAlgosList->setNumberOfInputTopos(1);
   ui.AvailableAlgosList_2->setNumberOfInputTopos(2);
-  //const char *gl_vendor =
+  // const char *gl_vendor =
   //	reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-  //const char *gl_version =
+  // const char *gl_version =
   //	reinterpret_cast<const char *>(glGetString(GL_VERSION));
-  //const char *gl_renderer =
+  // const char *gl_renderer =
   //	reinterpret_cast<const char *>(glGetString(GL_RENDERER));
 
-  //cout << endl;
-  //cout << "GL_VENDOR: " << (gl_vendor ? gl_vendor : "(null)") << endl;
-  //cout << "GL_VERSION: " << (gl_version ? gl_version : "(null)") << endl;
-  //cout << "GL_RENDERER: " << (gl_renderer ? gl_renderer : "(null)") << endl;
+  // cout << endl;
+  // cout << "GL_VENDOR: " << (gl_vendor ? gl_vendor : "(null)") << endl;
+  // cout << "GL_VERSION: " << (gl_version ? gl_version : "(null)") << endl;
+  // cout << "GL_RENDERER: " << (gl_renderer ? gl_renderer : "(null)") << endl;
 
-  //cout << endl;
-  //ui.TopoView->GetRenderWindow()->Print(cout);
-  //cout << "LoadSupportedExtension..." << endl;
-  //int supported=extensions->ExtensionSupported("GL_VERSION_1_2");
-  //int loaded=0;
-  //if(supported)
+  // cout << endl;
+  // ui.TopoView->GetRenderWindow()->Print(cout);
+  // cout << "LoadSupportedExtension..." << endl;
+  // int supported=extensions->ExtensionSupported("GL_VERSION_1_2");
+  // int loaded=0;
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 1.2" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_1_2");
@@ -285,8 +289,8 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 1.2 features!" <<endl;
   //	}
   //}
-  //supported=extensions->ExtensionSupported("GL_VERSION_1_3");
-  //if(supported)
+  // supported=extensions->ExtensionSupported("GL_VERSION_1_3");
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 1.3" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_1_3");
@@ -299,8 +303,8 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 1.3 features!" <<endl;
   //	}
   //}
-  //supported=extensions->ExtensionSupported("GL_VERSION_1_4");
-  //if(supported)
+  // supported=extensions->ExtensionSupported("GL_VERSION_1_4");
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 1.4" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_1_4");
@@ -313,8 +317,8 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 1.4 features!" <<endl;
   //	}
   //}
-  //supported=extensions->ExtensionSupported("GL_VERSION_1_5");
-  //if(supported)
+  // supported=extensions->ExtensionSupported("GL_VERSION_1_5");
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 1.5" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_1_5");
@@ -327,8 +331,8 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 1.5 features!" <<endl;
   //	}
   //}
-  //supported=extensions->ExtensionSupported("GL_VERSION_2_0");
-  //if(supported)
+  // supported=extensions->ExtensionSupported("GL_VERSION_2_0");
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 2.0" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_2_0");
@@ -341,8 +345,8 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 2.0 features!" <<endl;
   //	}
   //}
-  //supported=extensions->ExtensionSupported("GL_VERSION_2_1");
-  //if(supported)
+  // supported=extensions->ExtensionSupported("GL_VERSION_2_1");
+  // if(supported)
   //{
   //	cout << "Driver claims to support OpenGL 2.1" <<endl;
   //	loaded=extensions->LoadSupportedExtension("GL_VERSION_2_1");
@@ -355,29 +359,28 @@ NFEvalGUIMainWindow::NFEvalGUIMainWindow(QWidget *parent, Qt::WindowFlags flags)
   //		cout << "Failed to load OpenGL 2.1 features!" <<endl;
   //	}
   //}
-  //cout << "GetExtensionsString..." << endl;
-  //cout << extensions->GetExtensionsString() << endl;
+  // cout << "GetExtensionsString..." << endl;
+  // cout << extensions->GetExtensionsString() << endl;
 
-  //cout << "Set up pipeline." << endl;
+  // cout << "Set up pipeline." << endl;
 
-  //ui.TopoView->GetRenderWindow()->AddRenderer(renderer->getRenderer());
+  // ui.TopoView->GetRenderWindow()->AddRenderer(renderer->getRenderer());
 
-  //ui.AvailableAlgosList->setModel(createAlgoList(this));
-ui.cbx_ColorPalette->clear();
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightPixelToNFRainbowFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoIntensityToGrayscaleFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoMaskToBinaryFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToGrayscaleFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToColorMapFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoIntensityToColorMapFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToNFSpectralFunctor>"));
-ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightPixelToHSVRainbowFunctor>"));
+  // ui.AvailableAlgosList->setModel(createAlgoList(this));
+  ui.cbx_ColorPalette->clear();
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightPixelToNFRainbowFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoIntensityToGrayscaleFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoMaskToBinaryFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToGrayscaleFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToColorMapFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoIntensityToColorMapFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightToNFSpectralFunctor>"));
+  ui.cbx_ColorPalette->addItem(QString("NFTopoToColor<NFColorFunctors::NFTopoHeightPixelToHSVRainbowFunctor>"));
 
-
-ui.m_Colorbar->connectViewer(v->getColorBarClient());
-ui.m_Colorbar->setVisible(true);
- QObject::connect(this, SIGNAL(appendLogMsg(QString)), this , SLOT(addLogEntry(QString)));
- NFCLogger::setCallbackHandler(this);
+  ui.m_Colorbar->connectViewer(v->getColorBarClient());
+  ui.m_Colorbar->setVisible(true);
+  QObject::connect(this, SIGNAL(appendLogMsg(QString)), this, SLOT(addLogEntry(QString)));
+  NFCLogger::setCallbackHandler(this);
 }
 
 void NFEvalGUIMainWindow::closeEvent(QCloseEvent *event)
@@ -385,75 +388,74 @@ void NFEvalGUIMainWindow::closeEvent(QCloseEvent *event)
   writeSettings();
 }
 
-NFEvalGUIMainWindow::~NFEvalGUIMainWindow() {
+NFEvalGUIMainWindow::~NFEvalGUIMainWindow()
+{
 
-	 
-	delete thread;
+  delete thread;
   //	delete renderer;
   //	delete ui;
 }
 
 void NFEvalGUIMainWindow::SelectTopo(QListWidgetItem *p)
 {
-  AlgoListItem* itm= reinterpret_cast<AlgoListItem*>(p);
-  if(NULL!=itm)
+  AlgoListItem *itm = reinterpret_cast<AlgoListItem *>(p);
+  if (NULL != itm)
   {
-    if(NULL!=itm->Algo.get())
+    if (NULL != itm->Algo.get())
     {
       int cnt = itm->Algo->getNumberOfOutputTopos();
       int cnw = 2; // Number of windows
       ui.OutputParams->setParameterSet(itm->Algo->getOutputParameterSet());
-      int idx    = 0 ;
-      int idxView = 0 ;
-      if(0==cnt)
+      int idx = 0;
+      int idxView = 0;
+      if (0 == cnt)
       {
-        //setCurrentTopo(itm->Algo->getOutputTopo());
+        // setCurrentTopo(itm->Algo->getOutputTopo());
       }
       else
       {
-         bool okWin = false;       
-         idxView = QInputDialog::getInt(this, tr("Enter Window Number"),tr("No:"), 0, 0, cnw-1, 1, &okWin);
-        if (cnt>1)
+        bool okWin = false;
+        idxView = QInputDialog::getInt(this, tr("Enter Window Number"), tr("No:"), 0, 0, cnw - 1, 1, &okWin);
+        if (cnt > 1)
         {
 
           bool ok = false;
-           
-          idx = QInputDialog::getInt(this, tr("Enter Output Topo Index"),
-            tr("Index:"), 0, 0, cnt-1, 1, &ok);
 
-          if(false == ok) 
+          idx = QInputDialog::getInt(this, tr("Enter Output Topo Index"), tr("Index:"), 0, 0, cnt - 1, 1, &ok);
+
+          if (false == ok)
           {
-            idx = 0 ;
+            idx = 0;
           }
-          if(false == okWin) 
+          if (false == okWin)
           {
-            idxView = 0 ;
+            idxView = 0;
           }
         }
-        if (0==itm->Algo->getOutputTopo(idx).get())
+        if (0 == itm->Algo->getOutputTopo(idx).get())
         {
-          QMessageBox::warning(this,tr("Cannot set NULL Topo"), tr("Ignoring Selection"));
+          QMessageBox::warning(this, tr("Cannot set NULL Topo"), tr("Ignoring Selection"));
         }
         else
         {
-          setCurrentTopo(itm->Algo->getOutputTopo(idx),idxView);
+          setCurrentTopo(itm->Algo->getOutputTopo(idx), idxView);
         }
       }
 
-      SelectAlgo(itm->Algo,itm->ParamSet);
+      SelectAlgo(itm->Algo, itm->ParamSet);
 
       ui.TopoView->repaint(-1);
 
-      //histChart->setTopo(m_CurrentTopo);
-      //ui.HistogramChart->update();
+      // histChart->setTopo(m_CurrentTopo);
+      // ui.HistogramChart->update();
     }
   }
 }
 
-void NFEvalGUIMainWindow::SelectAlgo(QModelIndex  idx)
+void NFEvalGUIMainWindow::SelectAlgo(QModelIndex idx)
 {
 
-  if(idx.data().canConvert<QString>())
+  if (idx.data().canConvert<QString>())
   {
     QString data = idx.data().toString();
 
@@ -461,9 +463,9 @@ void NFEvalGUIMainWindow::SelectAlgo(QModelIndex  idx)
   }
 }
 
-void NFEvalGUIMainWindow::SelectAlgo(NF::NFEvaluation::Pointer algo,NF::NFParameterSet::Pointer pset)
+void NFEvalGUIMainWindow::SelectAlgo(NF::NFEvaluation::Pointer algo, NF::NFParameterSet::Pointer pset)
 {
-  //while(m_AlgoParmGuiWidgets.size()>0)
+  // while(m_AlgoParmGuiWidgets.size()>0)
   //{
   //	QLayout * t= m_AlgoParmGuiWidgets.front().first;
   //	QWidget * w = m_AlgoParmGuiWidgets.front().second;
@@ -473,14 +475,14 @@ void NFEvalGUIMainWindow::SelectAlgo(NF::NFEvaluation::Pointer algo,NF::NFParame
   //	delete w;
   //}
 
-  //while(m_AlgoParmGuiItems.size()>0)
+  // while(m_AlgoParmGuiItems.size()>0)
   //{
   //	QLayoutItem * t= m_AlgoParmGuiItems.front();
   //	m_AlgoParmGuiItems.pop_front();
   //	ui.AlgoParamLayout->removeItem(t);
   //	delete t;
   //}
-  //m_AlgoParamsEdit.clear();
+  // m_AlgoParamsEdit.clear();
 
   /*ui.verticalLayout_12->removeItem(ui.AlgoParamLayout);
   delete ui.AlgoParamLayout;
@@ -493,7 +495,7 @@ void NFEvalGUIMainWindow::SelectAlgo(NF::NFEvaluation::Pointer algo,NF::NFParame
   QFormLayout *layout = ui.AlgoParamLayout;
   if (layout) {
   for (int i = 0; i < layout->count(); ++i)
-  {		
+  {
   QLayoutItem* w=layout->itemAt(i, QFormLayout::LabelRole);
 
   layout->removeItem(w);
@@ -510,36 +512,36 @@ void NFEvalGUIMainWindow::SelectAlgo(NF::NFEvaluation::Pointer algo,NF::NFParame
   m_CurrentAlgo = algo;
   NF::NFParameterSet::Pointer params;
 
-  if(NULL==pset.get())
+  if (NULL == pset.get())
   {
     m_CurrentAlgo->setInputTopo(m_CurrentTopo);
-    params= m_CurrentAlgo->getDefaultParameterSet();
+    params = m_CurrentAlgo->getDefaultParameterSet();
   }
   else
   {
-    params=pset;
+    params = pset;
   }
   ui.tabsAlgoParams->setCurrentIndex(0);
-  ui.tabsAlgoParams->setTabText(0,QString(m_CurrentAlgo->getName().c_str()));
+  ui.tabsAlgoParams->setTabText(0, QString(m_CurrentAlgo->getName().c_str()));
 
   ui.m_AlgoParamsEdit->setParameterSet(params);
   ui.AlgoParamGrpBox->update();
-  //ui.HistogramChart->update();
+  // ui.HistogramChart->update();
 }
 
-void NFEvalGUIMainWindow::SelectAlgo(QString str,NF::NFParameterSet::Pointer pset)
+void NFEvalGUIMainWindow::SelectAlgo(QString str, NF::NFParameterSet::Pointer pset)
 {
   NF::NFEvaluationFactory::Pointer fac = NF::NFEvaluationFactory::New();
   NF::NFEvaluation::Pointer Algo = NF::NFEvaluation::Pointer(fac->getObjectByName(str.toStdString()).get());
-  if(NULL!=Algo.get())
+  if (NULL != Algo.get())
   {
-    SelectAlgo(Algo,pset);
+    SelectAlgo(Algo, pset);
   }
 }
 
 void NFEvalGUIMainWindow::SetScaleFactor(double f)
 {
-  ui.TopoView->setZScaleFactor(f,-1);
+  ui.TopoView->setZScaleFactor(f, -1);
   ui.TopoView->repaint(-1);
 }
 
@@ -547,7 +549,7 @@ void NFEvalGUIMainWindow::setTopoLayerMode(int idxView)
 {
   /* if(ui.radioButton_intens->isChecked())
   {
-  ui.TopoView->setTopoLayerMode(NF::NF3DEnums::IntensityImage,idxView); 
+  ui.TopoView->setTopoLayerMode(NF::NF3DEnums::IntensityImage,idxView);
   }
   else if(ui.radioButton_height->isChecked())
   {
@@ -561,22 +563,20 @@ void NFEvalGUIMainWindow::setTopoLayerMode(int idxView)
   {
   ui.TopoView->setTopoLayerMode(NF::NF3DEnums::MaskImage,idxView);
   }*/
-  ui.TopoView->repaint(-1);   
+  ui.TopoView->repaint(-1);
 }
 
 void NFEvalGUIMainWindow::setDisplayMode(int idxView)
 {
-  if(ui.radioButton_3d->isChecked())
+  if (ui.radioButton_3d->isChecked())
   {
-    ui.TopoView->setDisplayMode(NF::NF3DEnums::image3D,idxView);
- 
+    ui.TopoView->setDisplayMode(NF::NF3DEnums::image3D, idxView);
   }
   else
   {
-    ui.TopoView->setDisplayMode(NF::NF3DEnums::image2D,idxView);
-    
-  }  
-  ui.TopoView->repaint(-1);   
+    ui.TopoView->setDisplayMode(NF::NF3DEnums::image2D, idxView);
+  }
+  ui.TopoView->repaint(-1);
 }
 
 /*! set the loaded topo in the current topo widget
@@ -584,32 +584,30 @@ void NFEvalGUIMainWindow::setDisplayMode(int idxView)
 @param idxView ###
 @return void
 */
-void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxView)
+void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo, int idxView)
 {
-  static bool fristRun=true;
+  static bool fristRun = true;
 
-  if(topo.get() != NULL)
+  if (topo.get() != NULL)
   {
-    m_CurrentTopo= topo;
-    
-    if(m_CurrentTopo->hasColors())
+    m_CurrentTopo = topo;
+
+    if (m_CurrentTopo->hasColors())
     {
       ui.cbx_ColorPalette->addItem("NFIdentiyFilter");
-      
     }
     else
     {
-      
+
       // TODO fix this
-      //ui.cbx_ColorPalette->removeItem("NFIdentityFilter");
-      
+      // ui.cbx_ColorPalette->removeItem("NFIdentityFilter");
     }
     if (ui.tab_NF3DView->isVisible())
     {
       int numViews = ui.TopoView->getNumberOfViews();
-      if(idxView>=numViews)
+      if (idxView >= numViews)
       {
-        ui.TopoView->setNumberOfViews(idxView+1);
+        ui.TopoView->setNumberOfViews(idxView + 1);
       }
       double factorZ = 1.0;
       {
@@ -619,73 +617,69 @@ void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxV
         minMaxEval->evaluate();
         NFVariant minH = minMaxEval->getOutputParameter("Minimum Height");
         NFVariant maxH = minMaxEval->getOutputParameter("Maximum Height");
-        const double heightRange=maxH.getDouble()-minH.getDouble();
-        const double lateralRange = std::min(m_CurrentTopo->getDeltaXInMicrons() * m_CurrentTopo->getCountX()
-          , m_CurrentTopo->getDeltaYInMicrons() * m_CurrentTopo->getCountY());
+        const double heightRange = maxH.getDouble() - minH.getDouble();
+        const double lateralRange = std::min(m_CurrentTopo->getDeltaXInMicrons() * m_CurrentTopo->getCountX(),
+                                             m_CurrentTopo->getDeltaYInMicrons() * m_CurrentTopo->getCountY());
         const double heightPercentOfWidth = 8.0;
-        
 
         if (fabs(heightRange) > 1e-6)
         {
-          // höhe soll 8% der breite betragen 
+          // höhe soll 8% der breite betragen
           const double heightRangeSoll = heightPercentOfWidth * 0.01 * lateralRange;
-          factorZ = heightRangeSoll / heightRange ;
+          factorZ = heightRangeSoll / heightRange;
         }
-
-        
-
       }
-      ui.TopoView->setZScaleFactor(factorZ,0);
-      ui.TopoView->setTopoPointer(m_CurrentTopo,idxView);      
-      ui.TopoView->setZScaleFactor(factorZ,0);
+      ui.TopoView->setZScaleFactor(factorZ, 0);
+      ui.TopoView->setTopoPointer(m_CurrentTopo, idxView);
+      ui.TopoView->setZScaleFactor(factorZ, 0);
     }
     else if (ui.tab_openGL->isVisible())
     {
 #ifdef NF_OGL_RENDERER
       ui.glwidget->setTopo(topo);
 #endif
-    }   
-   
+    }
+
     setProfile(0);
     setHistogram(0);
 
     ui.TopoView->update();
-    ui.TopoView->pick(ui.TopoView->geometry().center().rx(),ui.TopoView->geometry().center().ry(),true,-1);
-    ui.TopoView->repaint(-1);  
+    ui.TopoView->pick(ui.TopoView->geometry().center().rx(), ui.TopoView->geometry().center().ry(), true, -1);
+    ui.TopoView->repaint(-1);
     long nrPoints = m_CurrentTopo->getCountY() * m_CurrentTopo->getCountX();
-    
 
-  /*  NF::NFTopography::MaskContainerType::Iterator itM = m_CurrentTopo->getMask()->begin();
-    for(;itM!= m_CurrentTopo->getMask()->end();++itM)
-    {
-      if(0!=*itM)
+    /*  NF::NFTopography::MaskContainerType::Iterator itM = m_CurrentTopo->getMask()->begin();
+      for(;itM!= m_CurrentTopo->getMask()->end();++itM)
       {
-        ++nrPointsValid;
+        if(0!=*itM)
+        {
+          ++nrPointsValid;
+        }
       }
-    }
 
-    NF::NFTopography::IntensityContainerType::Iterator itI = m_CurrentTopo->getIntensities()->begin();
-    for(;itI!= m_CurrentTopo->getIntensities()->end();++itI)
-    {
-      if(0!=*itI)
+      NF::NFTopography::IntensityContainerType::Iterator itI = m_CurrentTopo->getIntensities()->begin();
+      for(;itI!= m_CurrentTopo->getIntensities()->end();++itI)
       {
-        ++nrPointsValidIntens;
-      }
-    }*/
+        if(0!=*itI)
+        {
+          ++nrPointsValidIntens;
+        }
+      }*/
 
     QString str;
     str.append("Topo Info \n");
     str.append("Height [Points]: ");
     str.append(QString::number(m_CurrentTopo->getCountY()));
     str.append(" = ");
-    str.append(QString::number(m_CurrentTopo->getCountY()*m_CurrentTopo->getDeltaYInMillimeter() ));
+    str.append(QString::number(m_CurrentTopo->getCountY() * m_CurrentTopo->getDeltaYInMillimeter()));
     str.append(" mm\nWidth  [Points]: ");
     str.append(QString::number(m_CurrentTopo->getCountX()));
     str.append(" = ");
-    str.append(QString::number(m_CurrentTopo->getCountX()*m_CurrentTopo->getDeltaXInMillimeter() ));
+    str.append(QString::number(m_CurrentTopo->getCountX() * m_CurrentTopo->getDeltaXInMillimeter()));
     str.append(" mm\ndy: ");
     str.append(QString::number(m_CurrentTopo->getDeltaY()));
-    QString s;//= QString::fromStdWString(NF::convertMultiplicatorToString(m_CurrentTopo->getUnitMultiplicatorDeltas()));
+    QString
+        s; //= QString::fromStdWString(NF::convertMultiplicatorToString(m_CurrentTopo->getUnitMultiplicatorDeltas()));
     s.append("");
     s.append(NF::convertUnitToString(m_CurrentTopo->getUnitY()));
     str.append(" " + s);
@@ -693,25 +687,28 @@ void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxV
     str.append(QString::number(m_CurrentTopo->getDeltaX()));
     str.append(" " + s);
     str.append("\n   spx: ");
-    str.append(QString::number(m_CurrentTopo->getOffsetX()*m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetX(),NF::NFMultiplicatorMilli ) ));
+    str.append(QString::number(m_CurrentTopo->getOffsetX() *
+                               m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetX(),
+                                                                      NF::NFMultiplicatorMilli)));
     str.append(" mm");
     str.append("\n   spy: ");
-    str.append(QString::number(m_CurrentTopo->getOffsetY()*m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetY(),NF::NFMultiplicatorMilli ) ));
+    str.append(QString::number(m_CurrentTopo->getOffsetY() *
+                               m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetY(),
+                                                                      NF::NFMultiplicatorMilli)));
     str.append(" mm");
     str.append("\n   spz: ");
-    str.append(QString::number(m_CurrentTopo->getOffsetZ()*m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetZ(),NF::NFMultiplicatorMilli ) ));
+    str.append(QString::number(m_CurrentTopo->getOffsetZ() *
+                               m_CurrentTopo->getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorOffsetZ(),
+                                                                      NF::NFMultiplicatorMilli)));
     str.append(" mm");
-
 
     str.append("\nTotal Number of Points: ");
     str.append(QString::number(nrPoints));
     str.append("\nNumber of Points Valid (Mask): ");
 
-
-    
     NF::NFEvaluationFactory::Pointer fac = NF::NFEvaluationFactory::New();
     NF::NFAlgoTopoMinMax::Pointer eval = fac->getObjectByName("NFAlgoTopoMinMax");
-    if(eval.get()!=0)
+    if (eval.get() != 0)
     {
       eval->setInputTopo(m_CurrentTopo);
       eval->evaluate();
@@ -720,10 +717,14 @@ void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxV
       str.append(QString::number(nrPointsValid));
       str.append("\n");
       str.append("Min Height: ");
-      str.append(QString::number(eval->getMinHeight()*NF::NFTopography::getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorHeights(),NF::NFMultiplicatorMikro)));
+      str.append(QString::number(eval->getMinHeight() *
+                                 NF::NFTopography::getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorHeights(),
+                                                                           NF::NFMultiplicatorMikro)));
       str.append(u8" µm\n");
       str.append("Max Height: ");
-      str.append(QString::number(eval->getMaxHeight()*NF::NFTopography::getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorHeights(),NF::NFMultiplicatorMikro)));
+      str.append(QString::number(eval->getMaxHeight() *
+                                 NF::NFTopography::getUnitConversionFactor(m_CurrentTopo->getUnitMultiplicatorHeights(),
+                                                                           NF::NFMultiplicatorMikro)));
       str.append(u8" µm\n");
       str.append("Min Intenstiy: ");
       str.append(QString::number(eval->getMinIntensity()));
@@ -731,7 +732,6 @@ void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxV
       str.append("Max Intenstiy: ");
       str.append(QString::number(eval->getMaxIntensity()));
       str.append("\n");
-
     }
 
     ui.LogOutput->setText(str);
@@ -741,21 +741,19 @@ void NFEvalGUIMainWindow::setCurrentTopo(NF::NFTopography::Pointer topo,int idxV
 void NFEvalGUIMainWindow::threadFinished()
 {
 
-  if(m_CurrentAlgo->getNumberOfOutputTopos()>0)
+  if (m_CurrentAlgo->getNumberOfOutputTopos() > 0)
   {
-    setCurrentTopo( m_CurrentAlgo->getOutputTopo());
+    setCurrentTopo(m_CurrentAlgo->getOutputTopo());
   }
   else
   {
-
   }
   if (thread->getResultStatus() != 0)
   {
-    QMessageBox::warning(this, tr("Warning"),tr("Evaluation Error"));
+    QMessageBox::warning(this, tr("Warning"), tr("Evaluation Error"));
   }
 
-
-  AlgoListItem *itm=new AlgoListItem;
+  AlgoListItem *itm = new AlgoListItem;
   QString cap(m_CurrentAlgo->getName().c_str());
   cap.append(" (");
   cap.append(QString::number(m_algoCount));
@@ -763,8 +761,8 @@ void NFEvalGUIMainWindow::threadFinished()
   itm->setText(cap);
   m_algoCount++;
 
-  itm->ParamSet=m_CurrentAlgo->getParameterSet();
-  itm->Algo=m_CurrentAlgo;
+  itm->ParamSet = m_CurrentAlgo->getParameterSet();
+  itm->Algo = m_CurrentAlgo;
   ui.AlgoHistroy->addItem(itm);
   ui.OutputParams->setParameterSet(m_CurrentAlgo->getOutputParameterSet());
   this->ui.EvalBtn->setEnabled(true);
@@ -773,19 +771,20 @@ void NFEvalGUIMainWindow::threadFinished()
 
 void NFEvalGUIMainWindow::Eval()
 {
-  NF::NFParameterSet::Pointer params = ui.m_AlgoParamsEdit->getParameterSet();//  m_CurrentAlgo->getDefaultParameterSet();
-  m_CurrentAlgo=NF::NFEvaluation::Pointer(m_CurrentAlgo->createAnother().get());
-  if(m_CurrentAlgo->getNumberOfInputTopos()>=1)
+  NF::NFParameterSet::Pointer params =
+      ui.m_AlgoParamsEdit->getParameterSet(); //  m_CurrentAlgo->getDefaultParameterSet();
+  m_CurrentAlgo = NF::NFEvaluation::Pointer(m_CurrentAlgo->createAnother().get());
+  if (m_CurrentAlgo->getNumberOfInputTopos() >= 1)
   {
     m_CurrentAlgo->setInputTopo(m_CurrentTopo);
   }
 
   m_CurrentAlgo->setDebugEnabled(ui.chk_Debug->isChecked());
   thread->paramSet = params;
-  thread->eval =m_CurrentAlgo;
+  thread->eval = m_CurrentAlgo;
   thread->topo = m_CurrentTopo;
 
-  if(m_CurrentAlgo->getNumberOfInputTopos()>1)
+  if (m_CurrentAlgo->getNumberOfInputTopos() > 1)
   {
     return;
   }
@@ -801,51 +800,51 @@ void NFEvalGUIMainWindow::Eval()
   }*/
   /* m_CurrentAlgo->setParameterSet(params);
   m_CurrentAlgo->evaluate();*/
-  ui.progressBar->setRange ( 0,100 );
-  ui.progressBar->setValue ( 0 );
+  ui.progressBar->setRange(0, 100);
+  ui.progressBar->setValue(0);
 
   thread->start();
   this->ui.EvalBtn->setEnabled(false);
   this->ui.btn_AbortEval->setEnabled(true);
 
   //
-  //while(thread.isRunning())
+  // while(thread.isRunning())
   //{
   //   ui.progressBar->setValue ( thread.cmd.progress * 100);
   //  Sleep(10);
   //}
 }
 
-void  NFEvalGUIMainWindow::rereadPlugins()
+void NFEvalGUIMainWindow::rereadPlugins()
 {
-  QString fn = QFileDialog::getExistingDirectory(this,QString("Select Dir"),QString("C:\\NanoFocus\\NFMSoft"));
+  QString fn = QFileDialog::getExistingDirectory(this, QString("Select Dir"), QString("C:\\NanoFocus\\NFMSoft"));
   NFLoadPlugins(fn.toStdString().c_str());
 
   ui.AvailableAlgosList->refreshAlgoList();
 }
 
-void  NFEvalGUIMainWindow::openFile(const std::string &stdFn)
+void NFEvalGUIMainWindow::openFile(const std::string &stdFn)
 {
-  if(stdFn.size() > 4)
+  if (stdFn.size() > 4)
   {
     ui.TopoView->setNumberOfViews(1);
-    NF::NFFileReader::Pointer reader=NF::NFFileReader::New();
+    NF::NFFileReader::Pointer reader = NF::NFFileReader::New();
 
     reader->setFileName(stdFn);
-    if(0==reader->evaluate())
+    if (0 == reader->evaluate())
     {
-      if(reader->getOutputTopo().isValid())
+      if (reader->getOutputTopo().isValid())
       {
-        if(reader->getOutputTopo()->getCountX() >0 && reader->getOutputTopo()->getCountY()>0)
+        if (reader->getOutputTopo()->getCountX() > 0 && reader->getOutputTopo()->getCountY() > 0)
         {
-          //ui.AlgoHistroy->clear();
+          // ui.AlgoHistroy->clear();
 
           setCurrentTopo(reader->getOutputTopo());
-          AlgoListItem *itm=new AlgoListItem;
+          AlgoListItem *itm = new AlgoListItem;
           itm->setText(QString(reader->getName().c_str()));
-          itm->ParamSet=reader->getParameterSet();
-          itm->Algo=reader;
-          ui.AlgoHistroy->addItem(itm);          
+          itm->ParamSet = reader->getParameterSet();
+          itm->Algo = reader;
+          ui.AlgoHistroy->addItem(itm);
         }
       }
     }
@@ -854,11 +853,11 @@ void  NFEvalGUIMainWindow::openFile(const std::string &stdFn)
 
 void NFEvalGUIMainWindow::showMetaInfo()
 {
-  NF::NFQParamsetEditDialog dia(this,Qt::Dialog);
-  if(m_CurrentTopo.get() != NULL)
+  NF::NFQParamsetEditDialog dia(this, Qt::Dialog);
+  if (m_CurrentTopo.get() != NULL)
   {
     dia.setParameterSet(m_CurrentTopo->getMetaData());
-    if(dia.exec() == QDialog::Accepted)
+    if (dia.exec() == QDialog::Accepted)
     {
     }
   }
@@ -866,9 +865,11 @@ void NFEvalGUIMainWindow::showMetaInfo()
 
 void NFEvalGUIMainWindow::OpenFile()
 {
-  QString fn = QFileDialog::getOpenFileName(this,QString("Open Topo"),m_LastOpenDirTopo, tr("NanoFocus (*.nms *.oms *.sip *.png *.fits);;All Files (*.*)"));
-  //QString fn = QFileDialog::getOpenFileName(this,QString("Open Topo"),QString(), tr("NanoFocus (*.nms *.oms *.sip);;All Files (*.*)"));
-  if (fn.size()>0)
+  QString fn = QFileDialog::getOpenFileName(this, QString("Open Topo"), m_LastOpenDirTopo,
+                                            tr("NanoFocus (*.nms *.oms *.sip *.png *.fits);;All Files (*.*)"));
+  // QString fn = QFileDialog::getOpenFileName(this,QString("Open Topo"),QString(), tr("NanoFocus (*.nms *.oms
+  // *.sip);;All Files (*.*)"));
+  if (fn.size() > 0)
   {
     QFileInfo fi(fn);
     if (fi.exists())
@@ -877,28 +878,29 @@ void NFEvalGUIMainWindow::OpenFile()
     }
   }
 
-  std::string stdFn=fn.toStdString();
+  std::string stdFn = fn.toStdString();
 
   openFile(stdFn);
 }
 
 void NFEvalGUIMainWindow::SaveFile()
 {
-  QString fn = QFileDialog::getSaveFileName(this,QString("Save Topo"),QString("D:\\"), tr("NanoFocus (*.nms);;NanoFocus (*.sip);;All Files (*.*)"));
+  QString fn = QFileDialog::getSaveFileName(this, QString("Save Topo"), QString("D:\\"),
+                                            tr("NanoFocus (*.nms);;NanoFocus (*.sip);;All Files (*.*)"));
 
-  std::string stdFn=fn.toStdString();
+  std::string stdFn = fn.toStdString();
 
-  if(stdFn.size() > 4)
+  if (stdFn.size() > 4)
   {
-    NF::NFFileWriter::Pointer writer=NF::NFFileWriter::New();
+    NF::NFFileWriter::Pointer writer = NF::NFFileWriter::New();
     NF::NFTopography::Pointer topo;
-    topo=ui.TopoView->getTopoPointer(0);
+    topo = ui.TopoView->getTopoPointer(0);
 
     writer->setInputTopo(topo);
 
     writer->setFileName(stdFn);
 
-    if(true == writer->canWrite(stdFn))
+    if (true == writer->canWrite(stdFn))
     {
       writer->setFileName(stdFn);
       writer->evaluate();
@@ -914,10 +916,10 @@ void NFEvalGUIMainWindow::IntenstyCalibration()
   dia->exec();*/
 }
 
-void  NFEvalGUIMainWindow::SaveHistory()
+void NFEvalGUIMainWindow::SaveHistory()
 {
-  //QString fn = QFileDialog::getSaveFileName(this,QString("Save History"),QString("D:\\"), tr("NanoFocus Evaluation Description (*.ned);;All Files (*.*)"));
-  //if(fn.length() != 0)
+  // QString fn = QFileDialog::getSaveFileName(this,QString("Save History"),QString("D:\\"), tr("NanoFocus Evaluation
+  // Description (*.ned);;All Files (*.*)")); if(fn.length() != 0)
   //{
   //  NF::NFComplexEvaluation::Pointer complexEval = NF::NFComplexEvaluation::New();
   //  NF::NFTopography::Pointer  CurrentTopo=m_CurrentTopo;
@@ -937,7 +939,7 @@ void  NFEvalGUIMainWindow::SaveHistory()
 
   //    firstIdx=complexEval->addEval(p);
   //    complexEval->addTopoConnection(firstIdx,lastIdx);
-  //    lastIdx = firstIdx;             
+  //    lastIdx = firstIdx;
 
   //    cnt = CurrentTopo.get() != NULL;
   //    true == cnt ? cnt = CurrentTopo->getCreator()!=NULL : cnt  ;
@@ -948,15 +950,14 @@ void  NFEvalGUIMainWindow::SaveHistory()
   //  }
   //  complexEval->setName(fn.toStdString());
 
-
   //  NF::NFAlgoIOFactory::Pointer IOfac =  NF::NFAlgoIOFactory::New();
   //  NF::NFEvaluationIoTpl::Pointer xmlIo=IOfac->getObjectByName("NFAlgoXMLIO");
   //  xmlIo->setEval(complexEval.get());
   //  xmlIo->setDestination(fn.toStdString());
   //  xmlIo->write();
- // }
+  // }
 
-  //if(fn.length() != 0)
+  // if(fn.length() != 0)
   //{
   //  int cnt =this->ui.AlgoHistroy->count();
 
@@ -1009,64 +1010,65 @@ void  NFEvalGUIMainWindow::SaveHistory()
   //}
 }
 
-void  NFEvalGUIMainWindow::LoadHistory()
+void NFEvalGUIMainWindow::LoadHistory()
 {
-  QString fn = QFileDialog::getOpenFileName(this,QString("Load History"),QString("D:\\"), tr("NanoFocus Eval (*.eval);;All Files (*.*)"));
-  if(fn.length() != 0)
+  QString fn = QFileDialog::getOpenFileName(this, QString("Load History"), QString("D:\\"),
+                                            tr("NanoFocus Eval (*.eval);;All Files (*.*)"));
+  if (fn.length() != 0)
   {
     ui.AlgoHistroy->clear();
     std::ifstream in(fn.toStdString().c_str());
-    const size_t maxLineLength=5000;
-    char * name = new char [maxLineLength];
-    char * dummy = new char [maxLineLength];
-    char * ParamFile = new char [maxLineLength];
+    const size_t maxLineLength = 5000;
+    char *name = new char[maxLineLength];
+    char *dummy = new char[maxLineLength];
+    char *ParamFile = new char[maxLineLength];
     NF::NFEvaluationFactory::Pointer fac = NF::NFEvaluationFactory::New();
     NF::NFEvaluation::Pointer lastAlgo;
-    while(in)
+    while (in)
     {
-      in.getline(dummy,maxLineLength,'"');
-      in.getline(name,maxLineLength,'"');
-      in.getline(dummy,maxLineLength,'[');
-      in.getline(ParamFile,maxLineLength,']');
-      if(in)
+      in.getline(dummy, maxLineLength, '"');
+      in.getline(name, maxLineLength, '"');
+      in.getline(dummy, maxLineLength, '[');
+      in.getline(ParamFile, maxLineLength, ']');
+      if (in)
       {
         NF::NFEvaluation::Pointer algo(fac->getObjectByName(name));
-        if(algo.get()!=NULL)
+        if (algo.get() != NULL)
         {
           NF::NFParameterSetFileIO::Pointer paramSetIO = NF::NFParameterSetFileIO::New();
           paramSetIO->setSource(ParamFile);
           paramSetIO->read();
           NF::NFParameterSet::Pointer params = paramSetIO->getReadParameterSet();
           algo->setParameterSet(params);
-          if(lastAlgo.get() != 0)
+          if (lastAlgo.get() != 0)
           {
             algo->setInputTopo(lastAlgo->getOutputTopo());
           }
           algo->evaluate();
-          AlgoListItem *itm=new AlgoListItem;
+          AlgoListItem *itm = new AlgoListItem;
           itm->setText(QString(algo->getName().c_str()));
-          itm->ParamSet=algo->getParameterSet();
-          itm->Algo=algo;
+          itm->ParamSet = algo->getParameterSet();
+          itm->Algo = algo;
           ui.AlgoHistroy->addItem(itm);
-          lastAlgo=algo;
+          lastAlgo = algo;
         }
       }
     }
-    delete [] name;
-    delete [] dummy;
-    delete [] ParamFile;
+    delete[] name;
+    delete[] dummy;
+    delete[] ParamFile;
   }
 }
 
 void NFEvalGUIMainWindow::showAxis(bool val)
 {
-  //ui.TopoView->setShowAxis(val);
+  // ui.TopoView->setShowAxis(val);
 }
 void NFEvalGUIMainWindow::getRenderdImage()
 {
   bool ok;
-  int magnification = QInputDialog::getInt(this, tr("Enter Magnification"),
-    tr("Magnification Factor:"),1,1 , 50, 1, &ok);
+  int magnification =
+      QInputDialog::getInt(this, tr("Enter Magnification"), tr("Magnification Factor:"), 1, 1, 50, 1, &ok);
 
   if (ok)
   {
@@ -1110,16 +1112,17 @@ void NFEvalGUIMainWindow::getRenderdImage()
       }
     }
 #else
-    QString fileName = QFileDialog::getSaveFileName(this,tr("File Name"),tr(""),tr("Image Files (*.png *.jpg *.bmp *.tif)") );
+    QString fileName =
+        QFileDialog::getSaveFileName(this, tr("File Name"), tr(""), tr("Image Files (*.png *.jpg *.bmp *.tif)"));
     if (fileName.length() > 4)
     {
-     ui.TopoView->saveImage(fileName,magnification);
+      ui.TopoView->saveImage(fileName, magnification);
     }
 #endif
   }
 }
 
-void NFEvalGUIMainWindow::addLogEntry( QString str )
+void NFEvalGUIMainWindow::addLogEntry(QString str)
 {
   ui.logViewer->appendPlainText(str);
 }
@@ -1132,47 +1135,48 @@ void NFEvalGUIMainWindow::saveParams()
 
 void NFEvalGUIMainWindow::loadParams()
 {
-  QString fn = QFileDialog::getOpenFileName(this,QString("Load ParameterSet"),QString("D:\\"), tr("xml (*.npsx);;text (*.npst);;All Files (*.*)"));
+  QString fn = QFileDialog::getOpenFileName(this, QString("Load ParameterSet"), QString("D:\\"),
+                                            tr("xml (*.npsx);;text (*.npst);;All Files (*.*)"));
 
-  std::string stdFn=fn.toStdString();
+  std::string stdFn = fn.toStdString();
 
-  if(stdFn.size() > 4)
+  if (stdFn.size() > 4)
   {
-    NF::NFParameterSetIOFactory::Pointer IOFactory =  NF::NFParameterSetIOFactory::New();
-    const NF::NFParameterSetIOFactory::LightObjectListType &li= IOFactory->getLightObjectList();
+    NF::NFParameterSetIOFactory::Pointer IOFactory = NF::NFParameterSetIOFactory::New();
+    const NF::NFParameterSetIOFactory::LightObjectListType &li = IOFactory->getLightObjectList();
     NF::NFParameterSetIOFactory::LightObjectListType::const_iterator it = li.begin();
 
-    bool ok=false;
-    for(;false==ok && li.end()!=it; ++it)
+    bool ok = false;
+    for (; false == ok && li.end() != it; ++it)
     {
       NF::NFParameterSetIOFactory::ObjectType temp(*it);
-      ok=temp->canRead(stdFn);
-      if(true==ok)
+      ok = temp->canRead(stdFn);
+      if (true == ok)
       {
-       // temp->setParameterSet(params);
+        // temp->setParameterSet(params);
         temp->setSource(stdFn);
         temp->read();
         NF::NFParameterSet::Pointer readPset = temp->getReadParameterSet();
-        NF::NFParameterSet::Pointer curPset=  ui.m_AlgoParamsEdit->getParameterSet();
+        NF::NFParameterSet::Pointer curPset = ui.m_AlgoParamsEdit->getParameterSet();
         NF::NFParameterSet::Pointer newPset = NF::NFParameterSet::New();
         if (curPset.get() != NULL)
         {
           NF::NFParameterSet::const_iterator it = curPset->begin();
           NF::NFParameterSet::const_iterator itEnd = curPset->end();
-          while(it!=itEnd)
+          while (it != itEnd)
           {
             if (readPset->containsParameter(it->first))
             {
-              newPset->setParameter(it->first,readPset->getParameter(it->first));
+              newPset->setParameter(it->first, readPset->getParameter(it->first));
             }
             else
             {
-              newPset->setParameter(it->first,it->second);
+              newPset->setParameter(it->first, it->second);
             }
             ++it;
           }
         }
-        
+
         ui.m_AlgoParamsEdit->setParameterSet(newPset);
       }
     }
@@ -1193,11 +1197,12 @@ void NFEvalGUIMainWindow::readSettings()
   QSettings settings(AppName, QSettings::IniFormat);
 
   settings.beginGroup("paths");
-  m_LastOpenDirTopo = settings.value(LAST_OPEN_DIR_TOPO,"D:/messungen/").toString();
+  m_LastOpenDirTopo = settings.value(LAST_OPEN_DIR_TOPO, "D:/messungen/").toString();
   settings.endGroup();
 }
 
-void NFEvalGUIMainWindow::mousePositionSlot(double xPos, double yPos, double zPos, unsigned int colX, unsigned int rowY, double heightVal, int intensityVal, unsigned int maskVal, int colorVal )
+void NFEvalGUIMainWindow::mousePositionSlot(double xPos, double yPos, double zPos, unsigned int colX, unsigned int rowY,
+                                            double heightVal, int intensityVal, unsigned int maskVal, int colorVal)
 {
   QString s;
 
@@ -1205,7 +1210,6 @@ void NFEvalGUIMainWindow::mousePositionSlot(double xPos, double yPos, double zPo
   s.append(QString::number(xPos));
   s.append(" Y: ");
   s.append(QString::number(yPos));
-
 
   s.append(" X: ");
   s.append(QString::number(colX));
@@ -1243,17 +1247,17 @@ void NFEvalGUIMainWindow::mouseLeftButtonDblClickInSceneSlot(double xPos, double
       const bool ret = topo2DViewer->setCurrentTopoItemForProfileLine(objID);
       NFObjectID *topoItemID = topo2DViewer->getCurrentTopoItemForProfileLine();
 
-      NFObjectID * topoObjId1 = topo2DViewer->getTopo(0);
-      NFObjectID * topoObjId2 = topo2DViewer->getTopoByID(objID);
+      NFObjectID *topoObjId1 = topo2DViewer->getTopo(0);
+      NFObjectID *topoObjId2 = topo2DViewer->getTopoByID(objID);
 
       if (topoObjId1)
       {
-        NFTopography::Pointer topo1 = reinterpret_cast<NFTopography*>(topoObjId1->mID);
+        NFTopography::Pointer topo1 = reinterpret_cast<NFTopography *>(topoObjId1->mID);
       }
 
       if (topoObjId2)
       {
-        NFTopography::Pointer topo2 = reinterpret_cast<NFTopography*>(topoObjId2->mID);
+        NFTopography::Pointer topo2 = reinterpret_cast<NFTopography *>(topoObjId2->mID);
       }
 
       QVariant var = topo2DViewer->getItemsAtPos(xPos, yPos, true);
@@ -1261,8 +1265,8 @@ void NFEvalGUIMainWindow::mouseLeftButtonDblClickInSceneSlot(double xPos, double
       QList<QVariant> list = var.toList();
       for (int i = 0; i < list.size(); ++i)
       {
-        bool b = list.at(i).canConvert<NFObjectID*>();
-        NFObjectID *objId = list.at(i).value<NFObjectID*>();
+        bool b = list.at(i).canConvert<NFObjectID *>();
+        NFObjectID *objId = list.at(i).value<NFObjectID *>();
         int k = 0;
       }
     }
@@ -1279,7 +1283,8 @@ void NFEvalGUIMainWindow::mouseButtonReleaseInSceneSlot(double xPos, double yPos
   qDebug() << "mouseReleaseEvent: " << btn;
 }
 
-void NFEvalGUIMainWindow::lineChangedSlot(NFObjectID* topoId, NFObjectID* lineId, double startX, double startY, double endX, double endY)
+void NFEvalGUIMainWindow::lineChangedSlot(NFObjectID *topoId, NFObjectID *lineId, double startX, double startY,
+                                          double endX, double endY)
 {
   NF::NF_SYSTEM_SIZE_TYPE id1 = 0;
   NF::NF_SYSTEM_SIZE_TYPE id2 = 0;
@@ -1298,32 +1303,32 @@ void NFEvalGUIMainWindow::lineChangedSlot(NFObjectID* topoId, NFObjectID* lineId
 void NFEvalGUIMainWindow::clearHistory()
 {
   try
- {
-   int i =0;
-	 while(true)
-   {
-     ui.AlgoHistroy->setCurrentRow(i++);
-     
-     AlgoListItem* itm= dynamic_cast<AlgoListItem*>(ui.AlgoHistroy->currentItem());
-     if (NULL == itm)
-     {
-       throw(2);
-     }
-     if (NULL == itm->Algo)
-     {
-         throw(2);
-     }
-     itm->Algo = 0;
-     itm->ParamSet = 0;
-     ui.AlgoHistroy->removeItemWidget(ui.AlgoHistroy->currentItem());
-   }
- }
- catch (...)
- {
- 	int i=0;
-  ++i;
- }
- ui.AlgoHistroy->clear();
+  {
+    int i = 0;
+    while (true)
+    {
+      ui.AlgoHistroy->setCurrentRow(i++);
+
+      AlgoListItem *itm = dynamic_cast<AlgoListItem *>(ui.AlgoHistroy->currentItem());
+      if (NULL == itm)
+      {
+        throw(2);
+      }
+      if (NULL == itm->Algo)
+      {
+        throw(2);
+      }
+      itm->Algo = 0;
+      itm->ParamSet = 0;
+      ui.AlgoHistroy->removeItemWidget(ui.AlgoHistroy->currentItem());
+    }
+  }
+  catch (...)
+  {
+    int i = 0;
+    ++i;
+  }
+  ui.AlgoHistroy->clear();
 }
 
 void NFEvalGUIMainWindow::saveOutputParams()
@@ -1332,24 +1337,25 @@ void NFEvalGUIMainWindow::saveOutputParams()
   saveParameterSet(params);
 }
 
-void NFEvalGUIMainWindow::saveParameterSet( NF::NFParameterSet::Pointer pset )
+void NFEvalGUIMainWindow::saveParameterSet(NF::NFParameterSet::Pointer pset)
 {
-  QString fn = QFileDialog::getSaveFileName(this,QString("Save ParameterSet"),QString("D:\\"), tr("xml (*.npsx);;text (*.npst);;All Files (*.*)"));
+  QString fn = QFileDialog::getSaveFileName(this, QString("Save ParameterSet"), QString("D:\\"),
+                                            tr("xml (*.npsx);;text (*.npst);;All Files (*.*)"));
 
-  std::string stdFn=fn.toStdString();
+  std::string stdFn = fn.toStdString();
 
-  if(stdFn.size() > 4)
+  if (stdFn.size() > 4)
   {
-    NF::NFParameterSetIOFactory::Pointer IOFactory =  NF::NFParameterSetIOFactory::New();
-    const NF::NFParameterSetIOFactory::LightObjectListType &li= IOFactory->getLightObjectList();
+    NF::NFParameterSetIOFactory::Pointer IOFactory = NF::NFParameterSetIOFactory::New();
+    const NF::NFParameterSetIOFactory::LightObjectListType &li = IOFactory->getLightObjectList();
     NF::NFParameterSetIOFactory::LightObjectListType::const_iterator it = li.begin();
 
-    bool ok=false;
-    for(;false==ok && li.end()!=it; ++it)
+    bool ok = false;
+    for (; false == ok && li.end() != it; ++it)
     {
       NF::NFParameterSetIOFactory::ObjectType temp((*it)->createAnother());
-      ok=temp->canWrite(stdFn);
-      if(true==ok && pset.get() != NULL)
+      ok = temp->canWrite(stdFn);
+      if (true == ok && pset.get() != NULL)
       {
         temp->setParameterSetToBeWritten(pset);
         temp->setDestination(stdFn);
@@ -1368,28 +1374,29 @@ void NFEvalGUIMainWindow::reinit3DView()
 
 void NFEvalGUIMainWindow::abortEval()
 {
-//#if NFEVAL_VERSION_MAJOR > 7 || (NFEVAL_VERSION_MAJOR == 7 && NFEVAL_VERSION_MINOR >= 3)
+  //#if NFEVAL_VERSION_MAJOR > 7 || (NFEVAL_VERSION_MAJOR == 7 && NFEVAL_VERSION_MINOR >= 3)
   thread->eval->abortEvaluation();
-//#endif
+  //#endif
 }
 
-void NFEvalGUIMainWindow::setView( int currentView )
+void NFEvalGUIMainWindow::setView(int currentView)
 {
-  if (currentView<2)
+  if (currentView < 2)
   {
-    ui.TopoView->setNumberOfViews(currentView+1);
-  }else
+    ui.TopoView->setNumberOfViews(currentView + 1);
+  }
+  else
   {
     ui.TopoView->setNumberOfViews(2);
   }
 }
 
-/*! setProfile() is activated by the checkBox profileOn in the GUI and 
+/*! setProfile() is activated by the checkBox profileOn in the GUI and
 activates the profile when checked and disactivates when unchecked.
 @param idxView ###
 @return void
 */
-void NFEvalGUIMainWindow::setProfile( int idxView /*= -1*/ )
+void NFEvalGUIMainWindow::setProfile(int idxView /*= -1*/)
 {
   if (ui.profileOn->isChecked())
   {
@@ -1403,16 +1410,16 @@ void NFEvalGUIMainWindow::setProfile( int idxView /*= -1*/ )
     }
     else
     {
-      ui.TopoView->setLowerWindow(0,1);
-    }    
-  } 
+      ui.TopoView->setLowerWindow(0, 1);
+    }
+  }
   else
   {
-    ui.TopoView->setLowerWindow(2,0);
+    ui.TopoView->setLowerWindow(2, 0);
   }
 }
 
-void NFEvalGUIMainWindow::setHistogram( int idxView /*= -1*/ )
+void NFEvalGUIMainWindow::setHistogram(int idxView /*= -1*/)
 {
   if (ui.histogramOn->isChecked())
   {
@@ -1420,15 +1427,15 @@ void NFEvalGUIMainWindow::setHistogram( int idxView /*= -1*/ )
     {
       ui.profileOn->setCheckState(Qt::Unchecked);
     }
-    ui.TopoView->setLowerWindow(1,0);
+    ui.TopoView->setLowerWindow(1, 0);
   }
   else
   {
-    ui.TopoView->setLowerWindow(2,0);
+    ui.TopoView->setLowerWindow(2, 0);
   }
 }
 
-void NFEvalGUIMainWindow::setProfileAxis( )
+void NFEvalGUIMainWindow::setProfileAxis()
 {
   if (ui.profileOn->isChecked())
   {
@@ -1436,15 +1443,15 @@ void NFEvalGUIMainWindow::setProfileAxis( )
   }
 }
 
-void NFEvalGUIMainWindow::displayColorChanged( QString s )
+void NFEvalGUIMainWindow::displayColorChanged(QString s)
 {
-  ui.TopoView->setTopoToColorEvalByName(s,QString(),-1);
+  ui.TopoView->setTopoToColorEvalByName(s, QString(), -1);
 }
 
 void NFEvalGUIMainWindow::Mode2Dchanged()
 {
-  NFTopoViewer * topoViewer = ui.TopoView->getTopoViewer(0);
-  NF2DTopoViewer * topo2DViewer = 0;
+  NFTopoViewer *topoViewer = ui.TopoView->getTopoViewer(0);
+  NF2DTopoViewer *topo2DViewer = 0;
 
   if (topoViewer)
   {
@@ -1453,10 +1460,10 @@ void NFEvalGUIMainWindow::Mode2Dchanged()
 
   if (ui.rbt_moveOrScale->isChecked())
   {
-   if (topo2DViewer)
-   {
-     topo2DViewer->setMode(NF2DTopoViewer::moveOrScaleItems);
-   }
+    if (topo2DViewer)
+    {
+      topo2DViewer->setMode(NF2DTopoViewer::moveOrScaleItems);
+    }
   }
   else if (ui.rbt_drawRect->isChecked())
   {
@@ -1572,7 +1579,8 @@ void NFEvalGUIMainWindow::Mode2Dchanged()
   }
 }
 
-void NFEvalGUIMainWindow::newLogMessage( int LogLevel, const char* context, const char *message, const NFLogLocationInfo & loc, long long timeStamp, long long timeAfterStart )
+void NFEvalGUIMainWindow::newLogMessage(int LogLevel, const char *context, const char *message,
+                                        const NFLogLocationInfo &loc, long long timeStamp, long long timeAfterStart)
 {
   QString msg(message);
   emit appendLogMsg(msg);

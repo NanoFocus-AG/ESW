@@ -25,6 +25,7 @@ set( SRCS
     )
 	
  
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Od")   #disable optimization for RelWithDebugInfo  build configuration
 
  
 add_executable(${ProjectName}  ${SRCS}   )
