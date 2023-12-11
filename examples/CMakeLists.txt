@@ -11,8 +11,9 @@ project(${ProjectName}  VERSION 1.0.0 LANGUAGES CXX)
 set (NFEVAL_BASE_LIBS 
      ${NFEVAL_ROOT_DIR}/lib/NFBaseTypes${NFEVAL_VERSION}x64.lib
      ${NFEVAL_ROOT_DIR}/lib/NFEval${NFEVAL_VERSION}x64.lib
-	  ${NFEVAL_ROOT_DIR}/lib/NFEvalLogger${NFEVAL_VERSION}x64.lib
-	   ${NFEVAL_ROOT_DIR}/lib/NFlog4cxx64.lib
+	 ${NFEVAL_ROOT_DIR}/lib/NFEvalLogger${NFEVAL_VERSION}x64.lib
+	 ${NFEVAL_ROOT_DIR}/lib/NFComplexEvaluation${NFEVAL_VERSION}x64.lib
+	 ${NFEVAL_ROOT_DIR}/lib/NFlog4cxx64.lib
 )
 
 set (NFEVAL_INCLUDE_DIR 
@@ -21,7 +22,7 @@ set (NFEVAL_INCLUDE_DIR
 
 set( SRCS 
 	main.cpp
-	 
+	NFComplexEval.cpp 
     )
 	
  

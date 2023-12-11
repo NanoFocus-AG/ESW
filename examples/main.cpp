@@ -7,6 +7,10 @@
 #include <iostream>
 #include <string>
 
+
+#include "NFComplexEval.h"
+
+
 /* (c) NanoFocus AG, 2023
  leitz@nanofocus.de
  example01
@@ -128,6 +132,11 @@ int example02(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 
-  int rc = example01(argc, argv);
+
+   int rc = createNFComplexEval(argc, argv);
+
+   rc = example01(argc, argv);
+
+
   return 0;
 }
